@@ -54,8 +54,7 @@ function BlindsHTTPAccessory(log, config) {
     this.service
         .getCharacteristic(Characteristic.CurrentHorizontalTiltAngle)
         .on('get', this.getCurrentHorizontalTiltAngle.bind(this))
-        .on('set', this.setCurrentHorizontalTiltAngle.bind(this));
-
+  
 
     // the target horizontal tilt position (-90% to 90%) 
     // https://github.com/KhaosT/HAP-NodeJS/blob/master/lib/gen/HomeKitTypes.js#L2116
@@ -68,6 +67,11 @@ function BlindsHTTPAccessory(log, config) {
 BlindsHTTPAccessory.prototype.getCurrentPosition = function(callback) {
     this.log("Requested CurrentPosition: %s", this.lastPosition);
     callback(null, this.lastPosition);
+}
+
+BlindsHTTPAccessory.prototype.getCurrentHorizontalTiltAngle = function(callback) {
+    this.log("Requested CurrentHorizontalTiltAngle: %s", this.currentHorizontalTiltAngle);
+    callback(null, this.currentHorizontalTiltAngle);
 }
 
 BlindsHTTPAccessory.prototype.getPositionState = function(callback) {
