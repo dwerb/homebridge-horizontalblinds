@@ -16,16 +16,15 @@ function BlindsHTTPAccessory(log, config) {
     this.name = config["name"];
     this.upURL = config["up_url"];
     this.downURL = config["down_url"];
-    this.tiltupURL = config["tiltup_url"];
-    this.tiltdownURL = config["tiltdown_url"];
+    this.tiltupURL = config["tilt_url"];
     this.httpMethod = config["http_method"] || "POST";
 
     // state vars
     this.lastPosition = 0; // last known position of the blinds, down by default
     this.currentPositionState = 2; // stopped by default
     this.currentTargetPosition = 0; // down by default
-    this.TargetHorizontalTilt = 0; // open
-    this.currentTargetHorizontalTilt = 0; // open
+    this.targetHorizontalTiltAngle = 0; // open
+    this.currentHorizontalTiltAngle = 0; // open
     
 
     // register the service and provide the functions
@@ -51,11 +50,19 @@ function BlindsHTTPAccessory(log, config) {
         .on('set', this.setTargetPosition.bind(this));
 
     // the target horizontal tilt position (-90% to 90%) 
+    // https://github.com/KhaosT/HAP-NodeJS/blob/master/lib/gen/HomeKitTypes.js#L530
+    this.service
+        .getCharacteristic(Characteristic.CurrentHorizontalTiltAngle)
+        .on('get', this.getCurrentHorizontalTiltAngle.bind(this))
+        .on('set', this.setCurrentHorizontalTiltAngle.bind(this));
+
+
+    // the target horizontal tilt position (-90% to 90%) 
     // https://github.com/KhaosT/HAP-NodeJS/blob/master/lib/gen/HomeKitTypes.js#L2116
     this.service
         .getCharacteristic(Characteristic.TargetHorizontalTiltAngle)
-        .on('get', this.getTargetTiltPosition.bind(this))
-        .on('set', this.setTargetTiltPosition.bind(this));
+        .on('get', this.getTargetHorizontalTiltAngle.bind(this))
+        .on('set', this.setTargetHorizontalTiltAngle.bind(this));
 }
 
 BlindsHTTPAccessory.prototype.getCurrentPosition = function(callback) {
@@ -75,12 +82,6 @@ BlindsHTTPAccessory.prototype.getTargetPosition = function(callback) {
 
 BlindsHTTPAccessory.prototype.setTargetPosition = function(pos, callback) {
     this.log("Set TargetPosition: %s", pos);
-    this.currentTargetPosition = pos;
-    const moveUp = (this.currentTargetPosition >= this.lastPosition);
-    this.log((moveUp ? "Moving up" : "Moving down"));
-
-    this.service
-        .setCharacteristic(Characteristic.PositionState, (moveUp ? 1 : 0));
 
     this.httpRequest((moveUp ? this.upURL : this.downURL), this.httpMethod, function() {
         this.log("Success moving %s", (moveUp ? "up (to 100)" : "down (to 0)"))
@@ -89,6 +90,26 @@ BlindsHTTPAccessory.prototype.setTargetPosition = function(pos, callback) {
         this.service
             .setCharacteristic(Characteristic.PositionState, 2);
         this.lastPosition = (moveUp ? 100 : 0);
+
+        callback(null);
+    }.bind(this));
+}
+
+BlindsHTTPAccessory.prototype.getTargetHorizontalTiltAngle = function(pos, callback) {
+    this.log("Requested TargetHorizontalTiltAngle: %s", this.currentHorizontalTiltAngle);
+    callback(null, this.currentHorizontalTiltAngle);
+}
+BlindsHTTPAccessory.prototype.setTargetHorizontalTiltAngle = function(pos, callback) {
+    this.log("Set TargetHorizontalTiltAngle: %s", pos);
+
+    this.service
+        .setCharacteristic(Characteristic.PositionState, (moveUp ? 1 : 0));
+
+    this.httpRequest(this.tilt_url+"?angle=" + pos, this.httpMethod, function() {
+        this.log("Success changing tile to %s", pos)
+        this.service
+            .setCharacteristic(Characteristic.CurrentHorizontalTiltAngle, pos);
+        this.currentHorizontalTiltAngle = pos;
 
         callback(null);
     }.bind(this));
