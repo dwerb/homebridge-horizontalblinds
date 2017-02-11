@@ -5,7 +5,7 @@ module.exports = function(homebridge) {
     Service = homebridge.hap.Service;
     Characteristic = homebridge.hap.Characteristic;
 
-    homebridge.registerAccessory("homebridge-blinds", "BlindsHTTP", BlindsHTTPAccessory);
+    homebridge.registerAccessory("homebridge-horizontalblinds", "BlindsHTTP", BlindsHTTPAccessory);
 }
 
 function BlindsHTTPAccessory(log, config) {
@@ -16,12 +16,17 @@ function BlindsHTTPAccessory(log, config) {
     this.name = config["name"];
     this.upURL = config["up_url"];
     this.downURL = config["down_url"];
+    this.tiltupURL = config["tiltup_url"];
+    this.tiltdownURL = config["tiltdown_url"];
     this.httpMethod = config["http_method"] || "POST";
 
     // state vars
     this.lastPosition = 0; // last known position of the blinds, down by default
     this.currentPositionState = 2; // stopped by default
     this.currentTargetPosition = 0; // down by default
+    this.TargetHorizontalTilt = 0; // open
+    this.currentTargetHorizontalTilt = 0; // open
+    
 
     // register the service and provide the functions
     this.service = new Service.WindowCovering(this.name);
@@ -40,11 +45,17 @@ function BlindsHTTPAccessory(log, config) {
         .on('get', this.getPositionState.bind(this));
 
     // the target position (0-100%)
-    // https://github.com/KhaosT/HAP-NodeJS/blob/master/lib/gen/HomeKitTypes.js#L1564
     this.service
         .getCharacteristic(Characteristic.TargetPosition)
         .on('get', this.getTargetPosition.bind(this))
         .on('set', this.setTargetPosition.bind(this));
+
+    // the target horizontal tilt position (-90% to 90%) 
+    // https://github.com/KhaosT/HAP-NodeJS/blob/master/lib/gen/HomeKitTypes.js#L2116
+    this.service
+        .getCharacteristic(Characteristic.TargetHorizontalTiltAngle)
+        .on('get', this.getTargetTiltPosition.bind(this))
+        .on('set', this.setTargetTiltPosition.bind(this));
 }
 
 BlindsHTTPAccessory.prototype.getCurrentPosition = function(callback) {
