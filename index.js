@@ -16,8 +16,8 @@ function BlindsHTTPAccessory(log, config) {
     this.name = config["name"];
     this.upURL = config["up_url"];
     this.downURL = config["down_url"];
-    this.tiltupURL = config["tilt_url"];
-    this.httpMethod = config["http_method"] || "POST";
+    this.tiltURL = config["tilt_url"];
+    this.httpMethod = config["http_method"] || "GET";
 
     // state vars
     this.lastPosition = 0; // last known position of the blinds, down by default
@@ -99,17 +99,15 @@ BlindsHTTPAccessory.prototype.setTargetPosition = function(pos, callback) {
     }.bind(this));
 }
 
-BlindsHTTPAccessory.prototype.getTargetHorizontalTiltAngle = function(pos, callback) {
+BlindsHTTPAccessory.prototype.getTargetHorizontalTiltAngle = function(callback) {
     this.log("Requested TargetHorizontalTiltAngle: %s", this.currentHorizontalTiltAngle);
     callback(null, this.currentHorizontalTiltAngle);
 }
+
 BlindsHTTPAccessory.prototype.setTargetHorizontalTiltAngle = function(pos, callback) {
     this.log("Set TargetHorizontalTiltAngle: %s", pos);
 
-    this.service
-        .setCharacteristic(Characteristic.PositionState, (moveUp ? 1 : 0));
-
-    this.httpRequest(this.tilt_url+"?angle=" + pos, this.httpMethod, function() {
+    this.httpRequest(this.tiltURL+"?angle=" + pos, this.httpMethod, function() {
         this.log("Success changing tile to %s", pos)
         this.service
             .setCharacteristic(Characteristic.CurrentHorizontalTiltAngle, pos);
@@ -127,6 +125,7 @@ BlindsHTTPAccessory.prototype.httpRequest = function(url, method, callback) {
     if (!err && response.statusCode == 200) {
       callback(null);
     } else {
+      this.log("URL: %s", url);
       this.log("Error getting state (status code %s): %s", response.statusCode, err);
       callback(err);
     }
