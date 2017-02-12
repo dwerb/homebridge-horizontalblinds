@@ -32,9 +32,9 @@ function BlindsHTTPAccessory(log, config) {
 
     // the current position (0-100%)
     // https://github.com/KhaosT/HAP-NodeJS/blob/master/lib/gen/HomeKitTypes.js#L493
-    this.service
-        .getCharacteristic(Characteristic.CurrentPosition)
-        .on('get', this.getCurrentPosition.bind(this));
+    //this.service
+    //    .getCharacteristic(Characteristic.CurrentPosition)
+     //   .on('get', this.getCurrentPosition.bind(this));
 
     // the position state
     // 0 = DECREASING; 1 = INCREASING; 2 = STOPPED;
