@@ -1,5 +1,5 @@
 {
-  "name": "homebridge-blinds",
+  "name": "homebridge-horizontalblinds",
   "version": "1.0.0",
   "description": "A homebridge plugin to control my blinds",
   "main": "index.js",
@@ -16,9 +16,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zwerch/homebridge-blinds.git"
+    "url": "git+https://github.com/dwerb/homebridge-horizontalblinds.git"
   },
-  "author": "Robin Temme <zwerch1337@googlemail.com>",
   "license": "ISC",
   "dependencies": {
     "request": "^2.74.0"
