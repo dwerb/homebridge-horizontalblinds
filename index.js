@@ -107,8 +107,8 @@ BlindsHTTPAccessory.prototype.getTargetHorizontalTiltAngle = function(callback) 
 BlindsHTTPAccessory.prototype.setTargetHorizontalTiltAngle = function(pos, callback) {
     this.log("Set TargetHorizontalTiltAngle: %s", pos);
 
-    this.httpRequest(this.tiltURL+"?angle=" + pos, this.httpMethod, function() {
-        this.log("Success changing tile to %s", pos)
+    this.httpRequest(this.tiltURL+"?targetangle=" + pos, this.httpMethod, function() {
+        this.log("Success changing tilt to %s", pos)
         this.service
             .setCharacteristic(Characteristic.CurrentHorizontalTiltAngle, pos);
         this.currentHorizontalTiltAngle = pos;
@@ -123,6 +123,7 @@ BlindsHTTPAccessory.prototype.httpRequest = function(url, method, callback) {
     url: url,
   }, function(err, response, body) {
     if (!err && response.statusCode == 200) {
+      this.log(response.body);
       callback(null);
     } else {
       this.log("URL: %s", url);
